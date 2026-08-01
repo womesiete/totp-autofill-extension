@@ -1,0 +1,17 @@
+{
+	"name": "totp-autofill-extension",
+	"version": "1.0.0",
+	"description": "Autofills TOTP codes on matched URLs.",
+	"scripts": {
+		"build": "webpack --mode production",
+		"watch": "webpack --mode development --watch"
+	},
+	"dependencies": {
+		"otplib": "^12.0.1"
+	},
+	"devDependencies": {
+		"webpack": "^5.0.0",
+		"webpack-cli": "^4.0.0",
+		"copy-webpack-plugin": "^11.0.0"
+	}
+}

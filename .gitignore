@@ -1,0 +1,9 @@
+# Ignore Node modules
+node_modules/
+
+# Ignore the compiled extension output
+dist/
+
+# Ignore local environment variables or hardcoded secrets
+.env
+*.pem
