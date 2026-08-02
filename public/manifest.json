@@ -1,9 +1,10 @@
 {
 	"manifest_version": 3,
-	"name": "Offline TOTP Autofill",
+	"name": "__MSG_extensionName__",
 	"short_name": "TOTP Autofill",
 	"version": "1.0.0",
-	"description": "Generate, display, copy, and autofill encrypted offline TOTP codes for the active site.",
+	"description": "__MSG_extensionDescription__",
+	"default_locale": "en",
 	"minimum_chrome_version": "127",
 	"permissions": [
 		"storage",

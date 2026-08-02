@@ -5,3 +5,5 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+probe.txt
+tmp-test-do-not-commit.txt

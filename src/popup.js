@@ -1,5 +1,11 @@
 import { MESSAGE_TYPES } from "./lib/constants.js";
 
+const extensionTitle = chrome.i18n.getMessage("extensionName");
+
+if (extensionTitle) {
+	document.title = extensionTitle;
+}
+
 const views = [...document.querySelectorAll(".view")];
 const loadingView = document.getElementById("loading-view");
 const setupView = document.getElementById("setup-view");
@@ -394,30 +400,12 @@ function hideInlineMessage() {
 	inlineMessage.classList.remove("error");
 }
 
+/**
+ * Clipboard writes rely exclusively on the modern Clipboard API. When Chrome
+ * denies access, the caller displays the existing manual-copy guidance.
+ */
 async function copyText(value) {
-	try {
-		await navigator.clipboard.writeText(value);
-		return;
-	} catch (error) {
-		const textarea = document.createElement("textarea");
-		textarea.value = value;
-		textarea.setAttribute("readonly", "");
-		textarea.style.position = "fixed";
-		textarea.style.left = "-9999px";
-		document.body.append(textarea);
-		textarea.select();
-		let copied = false;
-
-		try {
-			copied = document.execCommand("copy");
-		} finally {
-			textarea.remove();
-		}
-
-		if (!copied) {
-			throw error;
-		}
-	}
+	await navigator.clipboard.writeText(value);
 }
 
 async function sendMessage(message) {
