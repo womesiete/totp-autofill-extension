@@ -97,7 +97,7 @@ npm run watch
 ## First use
 
 1. Select the toolbar icon or open the extension's Options page.
-2. Create a master password containing at least 10 characters.
+2. Create a master password containing at least 5 characters.
 3. Open Options and add an entry with a label, root domain, and Base32 secret.
 4. Visit a matching site and select the toolbar icon.
 
