@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Offline TOTP Autofill</title>
+		<link rel="stylesheet" href="popup.css">
+	</head>
+	<body>
+		<main class="popup-shell" aria-live="polite">
+			<header class="popup-header">
+				<div class="brand-mark" aria-hidden="true">T</div>
+				<div>
+					<h1>Offline TOTP</h1>
+					<p>Encrypted authenticator</p>
+				</div>
+				<button id="lock-button" class="icon-button" type="button" title="Lock this browser session" hidden>Lock</button>
+			</header>
+
+			<!-- Initial loading state while the active tab and vault status are resolved. -->
+			<section id="loading-view" class="view centered-view">
+				<div class="spinner" aria-hidden="true"></div>
+				<p>Checking this site…</p>
+			</section>
+
+			<!-- First-run setup creates the encrypted empty vault and unlocks it. -->
+			<section id="setup-view" class="view" hidden>
+				<h2>Create your master password</h2>
+				<p class="supporting-text">This password encrypts every TOTP secret. It is never stored and cannot be recovered.</p>
+				<form id="setup-form">
+					<label for="setup-password">Master password</label>
+					<input id="setup-password" name="password" type="password" minlength="10" autocomplete="new-password" required>
+					<label for="setup-confirm-password">Confirm password</label>
+					<input id="setup-confirm-password" name="confirmPassword" type="password" minlength="10" autocomplete="new-password" required>
+					<button class="primary-button" type="submit">Create encrypted vault</button>
+				</form>
+			</section>
+
+			<!-- Existing vaults remain locked until the password-derived key enters session storage. -->
+			<section id="unlock-view" class="view" hidden>
+				<h2>Unlock authenticator</h2>
+				<p class="supporting-text">The derived encryption key remains only in browser-session memory until Chrome fully closes.</p>
+				<form id="unlock-form">
+					<label for="unlock-password">Master password</label>
+					<input id="unlock-password" name="password" type="password" autocomplete="current-password" required autofocus>
+					<button class="primary-button" type="submit">Unlock and apply code</button>
+				</form>
+			</section>
+
+			<!-- Manual fallback appears only when the current hostname has no configured match. -->
+			<section id="manual-view" class="view" hidden>
+				<h2>No matching domain</h2>
+				<p id="manual-hostname" class="supporting-text"></p>
+				<label for="manual-entry-select">Choose an authenticator entry</label>
+				<select id="manual-entry-select">
+					<option value="">Select a site…</option>
+				</select>
+				<p id="manual-empty-message" class="empty-message" hidden>No entries exist yet. Add one from Options.</p>
+			</section>
+
+			<!-- Success is shown only when the user enables success popups or requests a manual override. -->
+			<section id="success-view" class="view" hidden>
+				<div class="success-heading">
+					<div>
+						<p id="success-domain" class="eyebrow"></p>
+						<h2 id="success-label">Code ready</h2>
+					</div>
+					<span class="success-badge">Ready</span>
+				</div>
+				<button id="code-button" class="code-display" type="button" title="Copy code">
+					<span id="success-code">000000</span>
+				</button>
+				<p id="countdown-text" class="countdown-text"></p>
+				<div id="outcome-summary" class="outcome-summary"></div>
+				<div class="button-row">
+					<button id="copy-button" class="secondary-button" type="button">Copy</button>
+					<button id="autofill-button" class="primary-button" type="button">Autofill now</button>
+				</div>
+				<button id="refresh-button" class="text-button" type="button">Generate current code again</button>
+			</section>
+
+			<section id="error-view" class="view" hidden>
+				<h2>Unable to apply the code</h2>
+				<p id="error-message" class="error-message"></p>
+				<button id="retry-button" class="primary-button" type="button">Try again</button>
+			</section>
+
+			<p id="inline-message" class="inline-message" role="status" hidden></p>
+
+			<footer class="popup-footer">
+				<button id="options-button" class="text-button" type="button">Open Options</button>
+				<span>Offline only</span>
+			</footer>
+		</main>
+		<script type="module" src="popup.js"></script>
+	</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Offline TOTP Autofill — Options</title>
+		<link rel="stylesheet" href="options.css">
+	</head>
+	<body>
+		<header class="topbar">
+			<div class="topbar-inner">
+				<div class="brand-group">
+					<div class="brand-mark" aria-hidden="true">T</div>
+					<div>
+						<h1>Offline TOTP Autofill</h1>
+						<p>Encrypted authenticator settings</p>
+					</div>
+				</div>
+				<div id="session-controls" class="session-controls" hidden>
+					<span class="session-pill"><span class="status-dot" aria-hidden="true"></span>Session unlocked</span>
+					<button id="lock-button" class="secondary-button compact-button" type="button">Lock now</button>
+				</div>
+			</div>
+		</header>
+
+		<main class="page-shell">
+			<!-- Authentication is rendered before any operation can request decrypted vault data. -->
+			<section id="authentication-panel" class="authentication-panel" aria-live="polite">
+				<div id="authentication-loading" class="authentication-card centered-card">
+					<div class="spinner" aria-hidden="true"></div>
+					<p>Checking encrypted vault…</p>
+				</div>
+
+				<div id="setup-card" class="authentication-card" hidden>
+					<p class="eyebrow">First-run setup</p>
+					<h2>Create the encrypted vault</h2>
+					<p class="supporting-text">Choose a master password of at least 10 characters. The password is not stored and cannot be recovered.</p>
+					<form id="setup-form" class="stacked-form">
+						<label for="setup-password">Master password</label>
+						<input id="setup-password" type="password" minlength="10" autocomplete="new-password" required>
+						<label for="setup-confirm-password">Confirm master password</label>
+						<input id="setup-confirm-password" type="password" minlength="10" autocomplete="new-password" required>
+						<button class="primary-button" type="submit">Create vault</button>
+					</form>
+				</div>
+
+				<div id="unlock-card" class="authentication-card" hidden>
+					<p class="eyebrow">Encrypted vault</p>
+					<h2>Unlock this Chrome session</h2>
+					<p class="supporting-text">The derived AES key is kept in session storage and disappears when the browser session ends.</p>
+					<form id="unlock-form" class="stacked-form">
+						<label for="unlock-password">Master password</label>
+						<input id="unlock-password" type="password" autocomplete="current-password" required>
+						<button class="primary-button" type="submit">Unlock vault</button>
+					</form>
+				</div>
+				<p id="authentication-message" class="authentication-message" role="status" hidden></p>
+			</section>
+
+			<!-- The application shell remains hidden until the service worker confirms an unlocked session. -->
+			<div id="application-shell" hidden>
+				<section class="hero-card">
+					<div>
+						<p class="eyebrow">Local security</p>
+						<h2>Your authenticator database stays on this device</h2>
+						<p>Secrets are encrypted as one authenticated vault. Network access is not requested by the extension.</p>
+					</div>
+					<div class="hero-stat">
+						<strong id="entry-count">0</strong>
+						<span>saved entries</span>
+					</div>
+				</section>
+
+				<p id="page-message" class="page-message" role="status" hidden></p>
+
+				<div class="dashboard-grid">
+					<div class="primary-column">
+						<section class="card" aria-labelledby="entries-heading">
+							<div class="card-header">
+								<div>
+									<p class="eyebrow">Authenticator database</p>
+									<h2 id="entries-heading">Saved sites</h2>
+								</div>
+								<button id="add-entry-button" class="primary-button compact-button" type="button">Add entry</button>
+							</div>
+							<div id="entries-list" class="entries-list"></div>
+							<div id="entries-empty" class="empty-state" hidden>
+								<h3>No authenticator entries yet</h3>
+								<p>Add one site below or import a JSON database.</p>
+							</div>
+						</section>
+
+						<section id="entry-editor-card" class="card" aria-labelledby="entry-editor-heading">
+							<div class="card-header">
+								<div>
+									<p class="eyebrow">Single entry</p>
+									<h2 id="entry-editor-heading">Add an authenticator</h2>
+								</div>
+								<button id="cancel-edit-button" class="text-button" type="button" hidden>Cancel edit</button>
+							</div>
+							<form id="entry-form" class="entry-form">
+								<input id="entry-id" type="hidden">
+								<div class="field-group">
+									<label for="entry-label">Label</label>
+									<input id="entry-label" maxlength="100" placeholder="Work account" autocomplete="off" required>
+									<p class="field-help">A recognizable account or service name.</p>
+								</div>
+								<div class="field-group">
+									<label for="entry-domain">Root domain</label>
+									<input id="entry-domain" inputmode="url" placeholder="example.com" autocomplete="off" required>
+									<p class="field-help">Subdomains match automatically, so login.example.com can use example.com.</p>
+								</div>
+								<div class="field-group full-width">
+									<label for="entry-secret">Base32 secret or otpauth URI</label>
+									<div class="secret-input-row">
+										<input id="entry-secret" type="password" spellcheck="false" autocomplete="off" required>
+										<button id="toggle-secret-button" class="secondary-button compact-button" type="button" aria-pressed="false">Show</button>
+									</div>
+									<p class="field-help">Spaces, hyphens, and Base32 padding are normalized before encryption.</p>
+								</div>
+								<details class="advanced-fields full-width">
+									<summary>Advanced TOTP parameters</summary>
+									<div class="advanced-grid">
+										<div class="field-group">
+											<label for="entry-algorithm">Algorithm</label>
+											<select id="entry-algorithm">
+												<option value="sha1">SHA-1</option>
+												<option value="sha256">SHA-256</option>
+												<option value="sha512">SHA-512</option>
+											</select>
+										</div>
+										<div class="field-group">
+											<label for="entry-digits">Digits</label>
+											<select id="entry-digits">
+												<option value="6">6</option>
+												<option value="7">7</option>
+												<option value="8">8</option>
+											</select>
+										</div>
+										<div class="field-group">
+											<label for="entry-period">Period (seconds)</label>
+											<input id="entry-period" type="number" min="15" max="120" step="1" value="30" required>
+										</div>
+									</div>
+								</details>
+								<div class="form-actions full-width">
+									<button id="save-entry-button" class="primary-button" type="submit">Save encrypted entry</button>
+									<button id="reset-entry-button" class="secondary-button" type="button">Clear form</button>
+								</div>
+							</form>
+						</section>
+					</div>
+
+					<aside class="secondary-column">
+						<section class="card" aria-labelledby="behavior-heading">
+							<div class="card-header">
+								<div>
+									<p class="eyebrow">Toolbar behavior</p>
+									<h2 id="behavior-heading">Automatic actions</h2>
+								</div>
+							</div>
+							<form id="settings-form" class="toggle-list">
+								<label class="toggle-row" for="setting-autofill">
+									<span><strong>Enable Automatic Autofill</strong><small>Find a likely one-time-code input and populate it without submitting.</small></span>
+									<input id="setting-autofill" type="checkbox">
+									<span class="toggle-control" aria-hidden="true"></span>
+								</label>
+								<label class="toggle-row" for="setting-toast">
+									<span><strong>Show Toast Notification (10 seconds)</strong><small>Display the generated code in the page’s bottom-right corner.</small></span>
+									<input id="setting-toast" type="checkbox">
+									<span class="toggle-control" aria-hidden="true"></span>
+								</label>
+								<label class="toggle-row" for="setting-copy">
+									<span><strong>Automatically Copy to Clipboard</strong><small>Requests optional clipboard access only while this setting is enabled.</small></span>
+									<input id="setting-copy" type="checkbox">
+									<span class="toggle-control" aria-hidden="true"></span>
+								</label>
+								<label class="toggle-row" for="setting-popup">
+									<span><strong>Show Success Popup</strong><small>Keep the toolbar popup open with the code and manual controls.</small></span>
+									<input id="setting-popup" type="checkbox">
+									<span class="toggle-control" aria-hidden="true"></span>
+								</label>
+							</form>
+						</section>
+
+						<section class="card" aria-labelledby="transfer-heading">
+							<div class="card-header">
+								<div>
+									<p class="eyebrow">Plaintext transfer</p>
+									<h2 id="transfer-heading">Import or export JSON</h2>
+								</div>
+							</div>
+							<p class="warning-note"><strong>Handle exports carefully.</strong> Exported JSON contains unencrypted TOTP secrets.</p>
+							<label for="import-json">JSON array</label>
+							<textarea id="import-json" rows="8" spellcheck="false" placeholder='[{"label":"Work","domain":"example.com","secret":"JBSWY3DPEHPK3PXP"}]'></textarea>
+							<div class="file-row">
+								<label class="secondary-button file-button" for="import-file">Choose JSON file</label>
+								<input id="import-file" class="visually-hidden" type="file" accept="application/json,.json">
+								<span id="import-file-name">No file selected</span>
+							</div>
+							<fieldset class="radio-group">
+								<legend>Import behavior</legend>
+								<label><input type="radio" name="import-mode" value="append" checked> Append to existing entries</label>
+								<label><input type="radio" name="import-mode" value="replace"> Replace the entire database</label>
+							</fieldset>
+							<div class="button-stack">
+								<button id="import-button" class="primary-button" type="button">Import and encrypt</button>
+								<button id="export-button" class="secondary-button" type="button">Prepare plaintext export</button>
+								<button id="download-export-button" class="text-button" type="button" hidden>Download prepared JSON</button>
+							</div>
+							<div id="export-panel" class="export-panel" hidden>
+								<label for="export-json">Prepared export</label>
+								<textarea id="export-json" rows="8" readonly spellcheck="false"></textarea>
+							</div>
+						</section>
+
+						<section class="card" aria-labelledby="security-heading">
+							<div class="card-header">
+								<div>
+									<p class="eyebrow">Vault security</p>
+									<h2 id="security-heading">Change master password</h2>
+								</div>
+							</div>
+							<p class="supporting-text">Changing the password creates a fresh salt and encryption key, then re-encrypts the whole vault.</p>
+							<form id="password-form" class="stacked-form">
+								<label for="new-password">New master password</label>
+								<input id="new-password" type="password" minlength="10" autocomplete="new-password" required>
+								<label for="confirm-new-password">Confirm new password</label>
+								<input id="confirm-new-password" type="password" minlength="10" autocomplete="new-password" required>
+								<button class="secondary-button" type="submit">Re-encrypt with new password</button>
+							</form>
+						</section>
+					</aside>
+				</div>
+			</div>
+		</main>
+
+		<template id="entry-row-template">
+			<article class="entry-row">
+				<div class="entry-icon" aria-hidden="true"></div>
+				<div class="entry-summary">
+					<h3 class="entry-label"></h3>
+					<p class="entry-domain"></p>
+					<p class="entry-metadata"></p>
+				</div>
+				<code class="entry-secret"></code>
+				<div class="entry-actions">
+					<button class="edit-entry-button secondary-button compact-button" type="button">Edit</button>
+					<button class="delete-entry-button danger-button compact-button" type="button">Delete</button>
+				</div>
+			</article>
+		</template>
+
+		<script type="module" src="options.js"></script>
+	</body>
+</html>

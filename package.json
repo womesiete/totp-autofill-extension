@@ -1,17 +1,33 @@
 {
 	"name": "totp-autofill-extension",
 	"version": "1.0.0",
-	"description": "Autofills TOTP codes on matched URLs.",
+	"private": true,
+	"description": "Offline, encrypted TOTP authenticator and autofill extension for Google Chrome.",
+	"type": "module",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/womesiete/totp-autofill-extension.git"
+	},
 	"scripts": {
+		"clean": "node ./scripts/clean.mjs",
 		"build": "webpack --mode production",
-		"watch": "webpack --mode development --watch"
+		"build:development": "webpack --mode development",
+		"watch": "webpack --mode development --watch",
+		"test": "node --test",
+		"check": "node ./scripts/check-source.mjs",
+		"validate": "npm run check && npm test && npm run build"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"npm": ">=10.0.0"
 	},
 	"dependencies": {
-		"otplib": "^12.0.1"
+		"otplib": "13.4.1"
 	},
 	"devDependencies": {
-		"webpack": "^5.0.0",
-		"webpack-cli": "^4.0.0",
-		"copy-webpack-plugin": "^11.0.0"
+		"copy-webpack-plugin": "14.0.0",
+		"webpack": "5.109.0",
+		"webpack-cli": "6.0.1"
 	}
 }
