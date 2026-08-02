@@ -1,0 +1,10 @@
+{
+	"extensionName": {
+		"message": "Offline TOTP Autofill",
+		"description": "Name of the extension"
+	},
+	"extensionDescription": {
+		"message": "Generate, display, copy, and autofill encrypted offline TOTP codes for the active site.",
+		"description": "Description of the extension"
+	}
+}

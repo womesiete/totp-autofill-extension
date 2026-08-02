@@ -458,6 +458,10 @@
 		};
 	}
 
+	/**
+	 * Clipboard writes rely exclusively on the modern Clipboard API. A failed
+	 * write is reported without mutating the page DOM or using execCommand.
+	 */
 	async function copyCode(code) {
 		try {
 			await navigator.clipboard.writeText(code);
@@ -467,29 +471,11 @@
 				method: "clipboard-api"
 			};
 		} catch (clipboardError) {
-			const textarea = document.createElement("textarea");
-			textarea.value = code;
-			textarea.setAttribute("readonly", "");
-			textarea.style.position = "fixed";
-			textarea.style.left = "-9999px";
-			textarea.style.opacity = "0";
-			(document.body ?? document.documentElement).append(textarea);
-			textarea.select();
-			let copied = false;
-
-			try {
-				copied = document.execCommand("copy");
-			} catch (fallbackError) {
-				copied = false;
-			} finally {
-				textarea.remove();
-			}
-
 			return {
 				attempted: true,
-				copied,
-				method: "exec-command",
-				error: copied ? undefined : clipboardError.message
+				copied: false,
+				method: "clipboard-api",
+				error: clipboardError.message
 			};
 		}
 	}
